@@ -13,10 +13,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import sun.misc.BASE64Decoder;
 import vo.Result;
 import vo.Status;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +40,9 @@ public class FaceController implements InitializingBean{
 
 	@Value("${faceSetId}")
 	private String faceSetId;
+
+	@Value("${imagePath}")
+	private String imagePath;
 
 
 	@RequestMapping("/addFace.do")
@@ -98,6 +104,7 @@ public class FaceController implements InitializingBean{
 			Map map1 = (Map) results.get(0);
 			String userid = (String) map1.get("user_id");
 			double confidence = (double) map1.get("confidence");
+			GenerateImage(base64, imagePath + id + ".jpg");
 			if (confidence > 70.0){
 				result.setUsername(userid);
 			}
@@ -128,6 +135,32 @@ public class FaceController implements InitializingBean{
 		String faceToken = json.optJSONArray("faces").optJSONObject(0).optString("face_token");
 		return faceToken;
 	}
-	
+	private  boolean GenerateImage(String imgStr, String imagePath)
+	{
+		if (imgStr == null) {
+			return false;
+		}
+		BASE64Decoder decoder = new BASE64Decoder();
+		try
+		{
+			byte[] b = decoder.decodeBuffer(imgStr);
+			for(int i=0;i<b.length;++i)
+			{
+				if(b[i]<0)
+				{
+					b[i]+=256;
+				}
+			}
+			OutputStream out = new FileOutputStream(imagePath);
+			out.write(b);
+			out.flush();
+			out.close();
+			return true;
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
+	}
 
 }
