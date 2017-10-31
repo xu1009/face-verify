@@ -1,0 +1,11 @@
+<label>face set</label>
+<form id="upload-form" action="/addFaceSet.do" method="post" enctype="multipart/form-data" >
+    　　　<input type="file" id="upload" name="file" /> <br>
+    　　　<input type="submit" value="Upload" />
+</form>
+<br>
+<label>target face</label>
+<form id="upload-form1" action="/faceSerach.do" method="post" enctype="multipart/form-data" >
+    　　　<input type="file" id="upload" name="file" /> <br>
+    　　　<input type="submit" value="Upload" />
+</form>

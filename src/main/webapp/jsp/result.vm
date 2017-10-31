@@ -1,0 +1,9 @@
+#if($add)
+    $add
+#end
+
+#if($serach)
+    $serach
+    <img src="/img/$imageUrl">
+    <label>$confidence</label>
+#end
