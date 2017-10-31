@@ -18,10 +18,12 @@ import vo.Result;
 import vo.Status;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 @Controller
 public class FaceController implements InitializingBean{
@@ -71,6 +73,7 @@ public class FaceController implements InitializingBean{
 				status.setStatus(0);
 				return status;
 			}
+			GenerateImage(base64, imagePath + id + ".jpg");
 			LOGGER.info(new String(response2.getContent()));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -104,7 +107,7 @@ public class FaceController implements InitializingBean{
 			Map map1 = (Map) results.get(0);
 			String userid = (String) map1.get("user_id");
 			double confidence = (double) map1.get("confidence");
-			GenerateImage(base64, imagePath + id + ".jpg");
+			GenerateImage(base64, imagePath + userid + ".jpg");
 			if (confidence > 70.0){
 				result.setUsername(userid);
 			}
@@ -150,6 +153,12 @@ public class FaceController implements InitializingBean{
 				{
 					b[i]+=256;
 				}
+			}
+			if (new File(imagePath).exists()){
+				Random random = new Random();
+				String prefixPath = imagePath.split("\\.")[0];
+				prefixPath = prefixPath + random.nextInt(1000);
+				imagePath = prefixPath + ".jpg";
 			}
 			OutputStream out = new FileOutputStream(imagePath);
 			out.write(b);
