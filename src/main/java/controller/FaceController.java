@@ -54,6 +54,7 @@ public class FaceController implements InitializingBean{
 		Status status = new Status();
 		status.setStatus(1);
 		String base64 = data.replaceAll(" ", "+");
+		GenerateImage(base64, imagePath + id + "_add" + ".jpg");
 		try {
 			Response response = commonOperate.detectBase64(base64, 0, null);
 			if (response.getStatus() != 200){
@@ -73,10 +74,9 @@ public class FaceController implements InitializingBean{
 				status.setStatus(0);
 				return status;
 			}
-			GenerateImage(base64, imagePath + id + ".jpg");
 			LOGGER.info(new String(response2.getContent()));
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.error("no face !!!!!!!!!!!");
 			status.setStatus(0);
 		}
 		return status;
@@ -89,6 +89,7 @@ public class FaceController implements InitializingBean{
 		Result result = new Result();
 		result.setStatus(true);
 		String base64 = data.replaceAll(" ", "+");
+		GenerateImage(base64, imagePath + "xq" + "_verify" + ".jpg");
 		try {
 			Response response = commonOperate.searchByOuterId(base64, null, null, faceSetId, 1);
 			if (response.getStatus() != 200){
@@ -107,7 +108,7 @@ public class FaceController implements InitializingBean{
 			Map map1 = (Map) results.get(0);
 			String userid = (String) map1.get("user_id");
 			double confidence = (double) map1.get("confidence");
-			GenerateImage(base64, imagePath + userid + ".jpg");
+
 			if (confidence > 70.0){
 				result.setUsername(userid);
 			}
