@@ -59,7 +59,7 @@ public class FaceController implements InitializingBean{
 		status.setStatus(1);
 		String base64 = data.replaceAll(" ", "+");
 		String tempPath = imagePath + id + "_add" + ".jpg";
-		GenerateImage(base64, tempPath);
+		tempPath = GenerateImage(base64, tempPath);
 		try {
 			BufferedImage src = ImageIO.read(new File(tempPath));
 			if (src.getWidth() > src.getHeight()){
@@ -102,7 +102,7 @@ public class FaceController implements InitializingBean{
 		result.setStatus(true);
 		String base64 = data.replaceAll(" ", "+");
 		String tempPath = imagePath + "tst" + "_verify" + ".jpg";
-		GenerateImage(base64, tempPath);
+		tempPath = GenerateImage(base64, tempPath);
 		try {
 			BufferedImage src = ImageIO.read(new File(tempPath));
 			if (src.getWidth() > src.getHeight()){
@@ -128,7 +128,6 @@ public class FaceController implements InitializingBean{
 			Map map1 = (Map) results.get(0);
 			String userid = (String) map1.get("user_id");
 			double confidence = (double) map1.get("confidence");
-
 			if (confidence > 70.0){
 				result.setUsername(userid);
 			}
@@ -159,10 +158,10 @@ public class FaceController implements InitializingBean{
 		String faceToken = json.optJSONArray("faces").optJSONObject(0).optString("face_token");
 		return faceToken;
 	}
-	private  boolean GenerateImage(String imgStr, String imagePath)
+	private String GenerateImage(String imgStr, String imagePath)
 	{
 		if (imgStr == null) {
-			return false;
+			return null;
 		}
 		BASE64Decoder decoder = new BASE64Decoder();
 		try
@@ -185,11 +184,11 @@ public class FaceController implements InitializingBean{
 			out.write(b);
 			out.flush();
 			out.close();
-			return true;
+			return imagePath;
 		}
 		catch (Exception e)
 		{
-			return false;
+			return null;
 		}
 	}
 	private static String GetImageStr(String imgFile)
