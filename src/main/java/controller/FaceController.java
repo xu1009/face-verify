@@ -8,22 +8,26 @@ import com.megvii.cloud.http.Response;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 import vo.Result;
 import vo.Status;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
 
 @Controller
 public class FaceController implements InitializingBean{
@@ -54,8 +58,15 @@ public class FaceController implements InitializingBean{
 		Status status = new Status();
 		status.setStatus(1);
 		String base64 = data.replaceAll(" ", "+");
-		GenerateImage(base64, imagePath + id + "_add" + ".jpg");
+		String tempPath = imagePath + id + "_add" + ".jpg";
+		GenerateImage(base64, tempPath);
 		try {
+			BufferedImage src = ImageIO.read(new File(tempPath));
+			if (src.getWidth() > src.getHeight()){
+				BufferedImage des = RotateImage.Rotate(src, 90);
+				ImageIO.write(des, "jpg", new File(tempPath));
+				base64 = GetImageStr(tempPath);
+			}
 			Response response = commonOperate.detectBase64(base64, 0, null);
 			if (response.getStatus() != 200){
 				status.setStatus(0);
@@ -77,6 +88,7 @@ public class FaceController implements InitializingBean{
 			LOGGER.info(new String(response2.getContent()));
 		} catch (Exception e) {
 			LOGGER.error("no face !!!!!!!!!!!");
+			e.printStackTrace();
 			status.setStatus(0);
 		}
 		return status;
@@ -89,8 +101,16 @@ public class FaceController implements InitializingBean{
 		Result result = new Result();
 		result.setStatus(true);
 		String base64 = data.replaceAll(" ", "+");
-		GenerateImage(base64, imagePath + "xq" + "_verify" + ".jpg");
+		String tempPath = imagePath + "tst" + "_verify" + ".jpg";
+		GenerateImage(base64, tempPath);
 		try {
+			BufferedImage src = ImageIO.read(new File(tempPath));
+			if (src.getWidth() > src.getHeight()){
+				BufferedImage des = RotateImage.Rotate(src, 90);
+				ImageIO.write(des, "jpg", new File(tempPath));
+				LOGGER.info("get it!!!!!!!");
+				base64 = GetImageStr(tempPath);
+			}
 			Response response = commonOperate.searchByOuterId(base64, null, null, faceSetId, 1);
 			if (response.getStatus() != 200){
 				result.setStatus(false);
@@ -172,5 +192,25 @@ public class FaceController implements InitializingBean{
 			return false;
 		}
 	}
+	private static String GetImageStr(String imgFile)
+	{
+		InputStream in = null;
+		byte[] data = null;
+		try
+		{
+			in = new FileInputStream(imgFile);
+			data = new byte[in.available()];
+			in.read(data);
+			in.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		BASE64Encoder encoder = new BASE64Encoder();
+		return encoder.encode(data);
+	}
+
+
 
 }
