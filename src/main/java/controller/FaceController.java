@@ -20,6 +20,7 @@ import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 import vo.FaceVo;
 import vo.Result;
+import vo.ResultMesg;
 import vo.Status;
 
 import javax.imageio.ImageIO;
@@ -56,17 +57,18 @@ public class FaceController implements InitializingBean{
 
 	@RequestMapping("/addFace.do")
 	@ResponseBody
-	public Status addFace(HttpServletRequest request, String data, String id) throws UnsupportedEncodingException {
-//		String data = faceVo.getData();
-//	    data = URLDecoder.decode(data, "utf-8");
-//		String id = faceVo.getId();
-//		id = URLDecoder.decode(id, "utf-8");
+	public ResultMesg addFace(HttpServletRequest request, @RequestBody FaceVo faceVo) throws UnsupportedEncodingException {
+		String data = faceVo.getData();
+	    data = URLDecoder.decode(data, "utf-8");
+		String id = faceVo.getId();
+		id = URLDecoder.decode(id, "utf-8");
 		LOGGER.info("this is new request!!!!");
 		Status status = new Status();
 		status.setStatus(1);
 		String base64 = data.replaceAll(" ", "+");
 		String tempPath = imagePath + id + "_add" + ".jpg";
 		tempPath = GenerateImage(base64, tempPath);
+		ResultMesg resultMesg = new ResultMesg();
 		try {
 			BufferedImage src = ImageIO.read(new File(tempPath));
 			if (src.getWidth() > src.getHeight()){
@@ -77,20 +79,23 @@ public class FaceController implements InitializingBean{
 			Response response = commonOperate.detectBase64(base64, 0, null);
 			if (response.getStatus() != 200){
 				status.setStatus(0);
-				return status;
+				resultMesg.setData(status);
+				return resultMesg;
 			}
 			LOGGER.info(new String(response.getContent()));
 			String faceToken = getFaceToken(response);
 			Response response1 = faceOperate.faceSetUserId(faceToken, id);
 			if (response1.getStatus() != 200){
 				status.setStatus(0);
-				return status;
+				resultMesg.setData(status);
+				return resultMesg;
 			}
 			LOGGER.info(new String(response1.getContent()));
 			Response response2 = faceSetOperate.createFaceSet(null,faceSetId,null,faceToken,null, 1);
 			if (response2.getStatus() != 200){
 				status.setStatus(0);
-				return status;
+				resultMesg.setData(status);
+				return resultMesg;
 			}
 			LOGGER.info(new String(response2.getContent()));
 		} catch (Exception e) {
@@ -98,22 +103,24 @@ public class FaceController implements InitializingBean{
 			e.printStackTrace();
 			status.setStatus(0);
 		}
-		return status;
+		resultMesg.setData(status);
+		return resultMesg;
 	}
 
 	@RequestMapping("/verifyFace.do")
 	@ResponseBody
-	public Result verifyFace(HttpServletRequest request, String data, String id) throws UnsupportedEncodingException {
-//		String data = faceVo.getData();
-//		data = URLDecoder.decode(data, "utf-8");
-//		String id = faceVo.getId();
-//		id = URLDecoder.decode(id, "utf-8");
+	public ResultMesg verifyFace(HttpServletRequest request, @RequestBody FaceVo faceVo) throws UnsupportedEncodingException {
+		String data = faceVo.getData();
+		data = URLDecoder.decode(data, "utf-8");
+		String id = faceVo.getId();
+		id = URLDecoder.decode(id, "utf-8");
 		LOGGER.info("this is new req!!!");
 		Result result = new Result();
-		result.setStatus(true);
+		result.setStatus(false);
 		String base64 = data.replaceAll(" ", "+");
 		String tempPath = imagePath + "tst" + "_verify" + ".jpg";
 		tempPath = GenerateImage(base64, tempPath);
+		ResultMesg resultMesg = new ResultMesg();
 		try {
 			BufferedImage src = ImageIO.read(new File(tempPath));
 			if (src.getWidth() > src.getHeight()){
@@ -124,7 +131,8 @@ public class FaceController implements InitializingBean{
 			Response response = commonOperate.searchByOuterId(base64, null, null, faceSetId, 1);
 			if (response.getStatus() != 200){
 				result.setStatus(false);
-				return result;
+				resultMesg.setData(result);
+				return resultMesg;
 			}
 			String jsonRes = new String(response.getContent());
 			ObjectMapper mapper = new ObjectMapper();
@@ -132,13 +140,15 @@ public class FaceController implements InitializingBean{
 			List results = (List) map.get("results");
 			if (results == null){
 				result.setStatus(false);
-				return result;
+				resultMesg.setData(result);
+				return resultMesg;
 			}
 			LOGGER.info(jsonRes);
 			Map map1 = (Map) results.get(0);
 			String userid = (String) map1.get("user_id");
 			double confidence = (double) map1.get("confidence");
 			if (confidence > 80.0){
+				result.setStatus(true);
 				result.setUsername(userid);
 			}
 			LOGGER.info("username: " + userid + "   " + "confidence:  " + confidence);
@@ -146,7 +156,8 @@ public class FaceController implements InitializingBean{
 			e.printStackTrace();
 			result.setStatus(false);
 		}
-		return result;
+		resultMesg.setData(result);
+		return resultMesg;
 	}
 
 
