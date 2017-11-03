@@ -13,10 +13,12 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
+import vo.FaceVo;
 import vo.Result;
 import vo.Status;
 
@@ -24,6 +26,7 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -53,7 +56,11 @@ public class FaceController implements InitializingBean{
 
 	@RequestMapping("/addFace.do")
 	@ResponseBody
-	public Status addFace(HttpServletRequest request, String data, String id){
+	public Status addFace(HttpServletRequest request,@RequestBody FaceVo faceVo) throws UnsupportedEncodingException {
+		String data = faceVo.getData();
+	    data = URLDecoder.decode(data, "utf-8");
+		String id = faceVo.getId();
+		id = URLDecoder.decode(id, "utf-8");
 		LOGGER.info("this is new request!!!!");
 		Status status = new Status();
 		status.setStatus(1);
@@ -96,7 +103,11 @@ public class FaceController implements InitializingBean{
 
 	@RequestMapping("/verifyFace.do")
 	@ResponseBody
-	public Result verifyFace(HttpServletRequest request, String data, String id){
+	public Result verifyFace(HttpServletRequest request, @RequestBody FaceVo faceVo) throws UnsupportedEncodingException {
+		String data = faceVo.getData();
+		data = URLDecoder.decode(data, "utf-8");
+		String id = faceVo.getId();
+		id = URLDecoder.decode(id, "utf-8");
 		LOGGER.info("this is new req!!!");
 		Result result = new Result();
 		result.setStatus(true);
@@ -108,7 +119,6 @@ public class FaceController implements InitializingBean{
 			if (src.getWidth() > src.getHeight()){
 				BufferedImage des = RotateImage.Rotate(src, 90);
 				ImageIO.write(des, "jpg", new File(tempPath));
-				LOGGER.info("get it!!!!!!!");
 				base64 = GetImageStr(tempPath);
 			}
 			Response response = commonOperate.searchByOuterId(base64, null, null, faceSetId, 1);
