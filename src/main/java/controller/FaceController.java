@@ -56,11 +56,11 @@ public class FaceController implements InitializingBean{
 
 	@RequestMapping("/addFace.do")
 	@ResponseBody
-	public Status addFace(HttpServletRequest request,@RequestBody FaceVo faceVo) throws UnsupportedEncodingException {
-		String data = faceVo.getData();
-	    data = URLDecoder.decode(data, "utf-8");
-		String id = faceVo.getId();
-		id = URLDecoder.decode(id, "utf-8");
+	public Status addFace(HttpServletRequest request, String data, String id) throws UnsupportedEncodingException {
+//		String data = faceVo.getData();
+//	    data = URLDecoder.decode(data, "utf-8");
+//		String id = faceVo.getId();
+//		id = URLDecoder.decode(id, "utf-8");
 		LOGGER.info("this is new request!!!!");
 		Status status = new Status();
 		status.setStatus(1);
@@ -103,11 +103,11 @@ public class FaceController implements InitializingBean{
 
 	@RequestMapping("/verifyFace.do")
 	@ResponseBody
-	public Result verifyFace(HttpServletRequest request, @RequestBody FaceVo faceVo) throws UnsupportedEncodingException {
-		String data = faceVo.getData();
-		data = URLDecoder.decode(data, "utf-8");
-		String id = faceVo.getId();
-		id = URLDecoder.decode(id, "utf-8");
+	public Result verifyFace(HttpServletRequest request, String data, String id) throws UnsupportedEncodingException {
+//		String data = faceVo.getData();
+//		data = URLDecoder.decode(data, "utf-8");
+//		String id = faceVo.getId();
+//		id = URLDecoder.decode(id, "utf-8");
 		LOGGER.info("this is new req!!!");
 		Result result = new Result();
 		result.setStatus(true);
@@ -138,7 +138,7 @@ public class FaceController implements InitializingBean{
 			Map map1 = (Map) results.get(0);
 			String userid = (String) map1.get("user_id");
 			double confidence = (double) map1.get("confidence");
-			if (confidence > 70.0){
+			if (confidence > 80.0){
 				result.setUsername(userid);
 			}
 			LOGGER.info("username: " + userid + "   " + "confidence:  " + confidence);
